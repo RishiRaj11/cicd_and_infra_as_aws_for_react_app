@@ -1,0 +1,41 @@
+name: Deploy React App to AWS S3
+
+on:
+  push:
+    branches:
+      - main  # This will trigger the workflow on every push to the 'main' branch
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest  # This uses an Ubuntu runner for the workflow
+
+    steps:
+      # Step 1: Checkout the code
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      # Step 2: Set up Node.js (same version as your local React app)
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16'  # Set this to the version your project uses (e.g., 16)
+
+      # Step 3: Install project dependencies
+      - name: Install dependencies
+        run: npm install
+
+      # Step 4: Build the React app
+      - name: Build the React app
+        run: npm run build
+
+      # Step 5: Configure AWS CLI
+      - name: Set up AWS CLI
+        run: |
+          aws configure set aws_access_key_id ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws configure set aws_secret_access_key ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws configure set default.region us-west-2  # Use your AWS region (e.g., us-east-1, eu-west-1, etc.)
+
+      # Step 6: Deploy to S3
+      - name: Deploy to S3
+        run: aws s3 sync build/ s3://rishi-cicd/ --delete
+        # Replace <your-bucket-name> with the name of your S3 bucket
