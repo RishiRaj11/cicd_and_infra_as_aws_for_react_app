@@ -12,7 +12,12 @@ resource "aws_iam_user" "s3_user" {
   }
 }
 
-# 2. Create IAM Policy for S3 Bucket Read/Write Access (without Principal)
+# 2. Generate a Random ID for Unique Policy Name
+resource "random_id" "unique_id" {
+  byte_length = 8
+}
+
+# 3. Create IAM Policy for S3 Bucket Read/Write Access (with Unique Name)
 data "aws_iam_policy_document" "s3_bucket_policy" {
   statement {
     actions   = ["s3:GetObject", "s3:PutObject", "s3:DeleteObject"]
@@ -23,7 +28,7 @@ data "aws_iam_policy_document" "s3_bucket_policy" {
 }
 
 resource "aws_iam_policy" "s3_bucket_policy" {
-  name        = "S3BucketReadWritePolicy"
+  name        = "S3BucketReadWritePolicy-${random_id.unique_id.hex}"
   description = "Read and write access to the S3 bucket for static website hosting"
   policy      = data.aws_iam_policy_document.s3_bucket_policy.json
 }
@@ -35,12 +40,12 @@ resource "aws_iam_policy_attachment" "s3_user_attachment" {
   policy_arn = aws_iam_policy.s3_bucket_policy.arn
 }
 
-# 3. Create Access Key for IAM User
+# 4. Create Access Key for IAM User
 resource "aws_iam_access_key" "github_action_access_key" {
   user = aws_iam_user.s3_user.name
 }
 
-# 4. Create S3 Bucket for Static Website Hosting
+# 5. Create S3 Bucket for Static Website Hosting
 resource "aws_s3_bucket" "react_app_bucket" {
   bucket = "my-react-app-unique-name"  # Ensure this name is globally unique
 
@@ -55,7 +60,7 @@ resource "aws_s3_bucket" "react_app_bucket" {
   }
 }
 
-# 5. Set Public Access Block for S3 Bucket
+# 6. Set Public Access Block for S3 Bucket
 resource "aws_s3_bucket_public_access_block" "react_app_bucket_block" {
   bucket = aws_s3_bucket.react_app_bucket.id
 
@@ -65,7 +70,7 @@ resource "aws_s3_bucket_public_access_block" "react_app_bucket_block" {
   restrict_public_buckets = false
 }
 
-# 6. Add Bucket Policy for Public Access
+# 7. Add Bucket Policy for Public Access
 data "aws_iam_policy_document" "react_app_bucket_policy" {
   statement {
     actions   = ["s3:GetObject"]
@@ -73,7 +78,6 @@ data "aws_iam_policy_document" "react_app_bucket_policy" {
 
     effect = "Allow"
 
-    # Here, directly specify the Principal as "*" for public access
     principals {
       type        = "AWS"
       identifiers = ["*"]  # Allow public access
