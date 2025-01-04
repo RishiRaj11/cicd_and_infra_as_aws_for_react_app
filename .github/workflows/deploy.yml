@@ -21,6 +21,7 @@ jobs:
 
       - name: Install Terraform dependencies
         run: |
+          cd infra  # Change to the directory containing main.tf
           terraform init
 
       - name: Apply Terraform Infrastructure
@@ -28,12 +29,14 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         run: |
+          cd infra  # Change to the directory containing main.tf
           terraform apply -auto-approve
 
       # Output the IAM user's credentials (access key and secret key) to use in the next job
       - name: Output IAM user credentials
         id: output-iam-keys
         run: |
+          cd infra  # Change to the directory containing main.tf
           echo "AWS_ACCESS_KEY_ID=$(terraform output -raw github_action_access_key_id)" >> $GITHUB_ENV
           echo "AWS_SECRET_ACCESS_KEY=$(terraform output -raw github_action_secret_access_key)" >> $GITHUB_ENV
 
