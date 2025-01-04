@@ -89,3 +89,26 @@ resource "aws_s3_bucket_policy" "react_app_bucket_policy" {
   bucket = aws_s3_bucket.react_app_bucket.id
   policy = data.aws_iam_policy_document.react_app_bucket_policy.json
 }
+
+# 8. Output IAM User Credentials for CI/CD
+output "github_action_access_key_id" {
+  value       = aws_iam_access_key.github_action_access_key.id
+  description = "Access Key ID for GitHub Action"
+}
+
+output "github_action_secret_access_key" {
+  value       = aws_iam_access_key.github_action_access_key.secret
+  description = "Secret Access Key for GitHub Action"
+  sensitive   = true
+}
+
+# 9. Output Bucket Information
+output "bucket_name" {
+  value       = aws_s3_bucket.react_app_bucket.bucket
+  description = "S3 bucket name"
+}
+
+output "bucket_website_endpoint" {
+  value       = aws_s3_bucket.react_app_bucket.website_endpoint
+  description = "Static website endpoint for the S3 bucket"
+}
